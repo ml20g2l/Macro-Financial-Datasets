@@ -1,2 +1,12 @@
-# macro-financial-datasets
-Curated macroeconomic and financial datasets used for an end-to-end analytics project, including asset prices, interest rates, volatility indices, and inflation data. Sourced from FRED, Bank of England, ONS, and Yahoo Finance.
+# Macro Financial Datasets
+
+This repository contains raw datasets used for a macro-driven investment analytics project.
+
+## Data Sources
+- Yahoo Finance (SPY, IEF, GLD)
+- Bank of England (Bank Rate)
+- FRED (VIX, US 10Y Treasury Yield)
+- ONS (UK CPI)
+
+## Purpose
+To support an end-to-end data analytics project exploring how macroeconomic conditions influence asset allocation decisions during market volatility.
