@@ -1,0 +1,6 @@
+# Preserve vendor snapshots byte-for-byte and suppress content diffs on moved source files.
+data/raw/** binary
+*.png -text
+*.twbx -text
+*.xlsx -text
+*.xls -text
