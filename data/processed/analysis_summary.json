@@ -1,0 +1,55 @@
+{
+  "analysis_refreshed": "2026-07-15",
+  "method": {
+    "signal_lag_trading_days": 1,
+    "vix_elevated_threshold": 20.0,
+    "vix_stress_threshold": 30.0,
+    "yield_change_lookback_trading_days": 63,
+    "yield_tightening_threshold_percentage_points": 0.5,
+    "risk_free_rate_for_sharpe": 0.0
+  },
+  "qa": {
+    "asset_rows_raw": 15846,
+    "asset_duplicate_keys": 0,
+    "asset_null_dates": 0,
+    "asset_null_prices": 0,
+    "vix_rows_raw": 1305,
+    "vix_duplicate_dates": 0,
+    "vix_null_values": 20,
+    "dgs10_rows_raw": 1305,
+    "dgs10_duplicate_dates": 0,
+    "dgs10_null_values": 55,
+    "analysis_start": "2021-07-07",
+    "analysis_end": "2025-12-30",
+    "classified_days": 1111,
+    "asset_calendar_days": 5282,
+    "days_before_macro_overlap": 4092,
+    "overlap_warmup_or_missing_days": 79,
+    "asset_tickers": "SPY,IEF,GLD",
+    "daily_asset_rows": 15846,
+    "daily_asset_duplicate_keys": 0,
+    "classified_return_nulls": 0
+  },
+  "best_annualized_return_by_regime": [
+    {
+      "regime": "Calm / easing",
+      "ticker": "GLD",
+      "annualized_return": 0.200157814271794
+    },
+    {
+      "regime": "Tightening",
+      "ticker": "GLD",
+      "annualized_return": 0.14048097896757042
+    },
+    {
+      "regime": "Elevated risk",
+      "ticker": "GLD",
+      "annualized_return": 0.3150540141901176
+    },
+    {
+      "regime": "Stress",
+      "ticker": "SPY",
+      "annualized_return": 0.6679367205866552
+    }
+  ]
+}
