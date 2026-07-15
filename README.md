@@ -124,13 +124,13 @@ The SQL pipeline mirrors the Python method, including as-of joins, the 63-tradin
 
 ## Tableau deliverable
 
-The packaged workbook is [`tableau/asset_performance_across_macro_regimes.twbx`](tableau/asset_performance_across_macro_regimes.twbx). Two exported dashboard views are retained for review:
+The packaged workbook is [`tableau/asset_performance_across_macro_regimes.twbx`](tableau/asset_performance_across_macro_regimes.twbx). It is fully self-contained and connects only to the packaged copies of [`data/processed/regime_asset_metrics.csv`](data/processed/regime_asset_metrics.csv) and [`data/processed/regime_correlations.csv`](data/processed/regime_correlations.csv).
 
-| Regime performance | Macro regimes and asset performance |
-|---|---|
-| ![Regime performance dashboard](outputs/dashboard_exports/regime_performance_dashboard.png) | ![Macro regimes dashboard](outputs/dashboard_exports/macro_regimes_and_asset_performance_dashboard.png) |
+The 1,400 x 900 dashboard compares GLD, IEF, and SPY across the four documented regimes (Calm / easing, Tightening, Elevated risk, and Stress). It reports annualized return, annualized volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime asset correlations.
 
-The generated Python figures and processed tables are the source of truth for the quantitative claims in this README. The Tableau exports are presentation artifacts from the workbook.
+![Macro regime and asset performance dashboard](outputs/dashboard_exports/macro_regime_dashboard.png)
+
+The generated Python figures and processed tables remain the source of truth for the quantitative claims in this README. The Tableau dashboard is a presentation layer over those exact processed outputs.
 
 ## Repository structure
 
