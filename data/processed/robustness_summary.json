@@ -1,0 +1,12 @@
+{
+  "scenarios": 6,
+  "bootstrap_samples": 5000,
+  "block_size_trading_days": 5,
+  "all_scenarios_gld_leads_tightening": true,
+  "all_scenarios_gld_leads_elevated_risk": false,
+  "all_scenarios_ief_tightening_return_negative": false,
+  "stress_observation_range": [
+    8,
+    62
+  ]
+}

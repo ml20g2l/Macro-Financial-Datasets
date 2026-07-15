@@ -41,6 +41,7 @@ ASSET_COLORS = {"SPY": "#4C78A8", "IEF": "#D4A72C", "GLD": "#E07A5F"}
 
 def _read_source_data(project_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     asset_path = project_root / "data/raw/yahoo/asset_prices.csv"
+    asset_metadata_path = project_root / "data/raw/yahoo/asset_prices_metadata.json"
     vix_path = project_root / "data/raw/fred/VIXCLS.csv"
     dgs10_path = project_root / "data/raw/fred/DGS10.csv"
 
@@ -73,6 +74,17 @@ def _read_source_data(project_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, d
         "dgs10_duplicate_dates": int(dgs10_raw.duplicated(["date"]).sum()),
         "dgs10_null_values": int(dgs10_raw["dgs10"].isna().sum()),
     }
+    if asset_metadata_path.exists():
+        asset_metadata = json.loads(asset_metadata_path.read_text(encoding="utf-8"))
+        qa.update(
+            {
+                "asset_price_basis": asset_metadata.get("price_basis", "unknown"),
+                "asset_price_retrieved_at_utc": asset_metadata.get(
+                    "retrieved_at_utc", "unknown"
+                ),
+                "asset_price_sha256": asset_metadata.get("sha256", "unknown"),
+            }
+        )
 
     assets = (
         assets_raw.dropna(subset=["date", "ticker", "close_price"])

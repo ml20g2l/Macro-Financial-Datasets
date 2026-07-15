@@ -19,6 +19,9 @@
     "dgs10_rows_raw": 1305,
     "dgs10_duplicate_dates": 0,
     "dgs10_null_values": 55,
+    "asset_price_basis": "distribution-adjusted close (splits and cash distributions)",
+    "asset_price_retrieved_at_utc": "2026-07-15T12:59:22+00:00",
+    "asset_price_sha256": "9e5891eb21b11331e4543fd00e2d94b1af2ed6f6ad5976bdc72c42d615e50f79",
     "analysis_start": "2021-07-07",
     "analysis_end": "2025-12-30",
     "classified_days": 1111,
@@ -49,7 +52,7 @@
     {
       "regime": "Stress",
       "ticker": "SPY",
-      "annualized_return": 0.6679367205866552
+      "annualized_return": 0.6679405293124097
     }
   ]
 }

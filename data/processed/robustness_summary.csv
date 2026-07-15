@@ -1,0 +1,7 @@
+scenario,vix_elevated,vix_stress,yield_tightening_pp,is_baseline,classified_days,gld_leads_tightening,gld_leads_elevated_risk,ief_tightening_return_negative,stress_spy_return_positive,stress_observations
+VIX 20/30; yield 0.25pp,20.0,30.0,0.25,False,1111,True,True,False,True,62
+VIX 20/30; yield 0.50pp,20.0,30.0,0.5,True,1111,True,True,True,True,62
+VIX 20/30; yield 0.75pp,20.0,30.0,0.75,False,1111,True,True,True,True,62
+VIX 25/35; yield 0.25pp,25.0,35.0,0.25,False,1111,True,False,False,True,8
+VIX 25/35; yield 0.50pp,25.0,35.0,0.5,False,1111,True,False,True,True,8
+VIX 25/35; yield 0.75pp,25.0,35.0,0.75,False,1111,True,False,True,True,8
