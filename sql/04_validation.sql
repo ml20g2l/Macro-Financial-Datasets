@@ -32,6 +32,18 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'Tightening threshold classification mismatch';
     END IF;
+
+    IF (SELECT count(*) FROM mart.daily_macro_regimes WHERE regime <> 'Unclassified') <> 1111 THEN
+        RAISE EXCEPTION 'Expected 1,111 classified trading days for the versioned snapshot';
+    END IF;
+
+    IF (SELECT count(*) FROM mart.regime_asset_metrics) <> 12 THEN
+        RAISE EXCEPTION 'Expected 12 regime/asset metric rows';
+    END IF;
+
+    IF (SELECT count(*) FROM mart.regime_correlations) <> 12 THEN
+        RAISE EXCEPTION 'Expected 12 regime/pair correlation rows';
+    END IF;
 END $$;
 
 -- Reviewable row-count, coverage, and missingness report.

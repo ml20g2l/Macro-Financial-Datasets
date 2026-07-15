@@ -1,0 +1,40 @@
+{
+  "source": "Yahoo Finance via yfinance",
+  "yfinance_version": "1.5.1",
+  "retrieved_at_utc": "2026-07-15T12:59:22+00:00",
+  "parameters": {
+    "tickers": [
+      "SPY",
+      "IEF",
+      "GLD"
+    ],
+    "start": "2005-01-03",
+    "end_exclusive": "2025-12-31",
+    "interval": "1d",
+    "auto_adjust": true,
+    "actions": false
+  },
+  "price_basis": "distribution-adjusted close (splits and cash distributions)",
+  "rows": 15846,
+  "coverage": [
+    {
+      "ticker": "GLD",
+      "first_date": "2005-01-03",
+      "last_date": "2025-12-30",
+      "rows": 5282
+    },
+    {
+      "ticker": "IEF",
+      "first_date": "2005-01-03",
+      "last_date": "2025-12-30",
+      "rows": 5282
+    },
+    {
+      "ticker": "SPY",
+      "first_date": "2005-01-03",
+      "last_date": "2025-12-30",
+      "rows": 5282
+    }
+  ],
+  "sha256": "9e5891eb21b11331e4543fd00e2d94b1af2ed6f6ad5976bdc72c42d615e50f79"
+}

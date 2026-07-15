@@ -1,6 +1,9 @@
 """Lightweight reproducibility checks; run directly without pytest."""
 
 from pathlib import Path
+import hashlib
+import json
+import zipfile
 
 import nbformat
 import numpy as np
@@ -14,6 +17,9 @@ macro = pd.read_csv(PROCESSED / "daily_macro_regimes.csv", parse_dates=["date"])
 assets = pd.read_csv(PROCESSED / "daily_asset_returns.csv", parse_dates=["date"])
 metrics = pd.read_csv(PROCESSED / "regime_asset_metrics.csv")
 correlations = pd.read_csv(PROCESSED / "regime_correlations.csv")
+robustness = pd.read_csv(PROCESSED / "robustness_metrics.csv")
+robustness_summary = pd.read_csv(PROCESSED / "robustness_summary.csv")
+intervals = pd.read_csv(PROCESSED / "regime_return_confidence_intervals.csv")
 
 assert not macro["date"].duplicated().any()
 assert not assets.duplicated(["date", "ticker"]).any()
@@ -21,6 +27,9 @@ assert set(metrics["regime"]) == {"Calm / easing", "Tightening", "Elevated risk"
 assert set(metrics["ticker"]) == {"SPY", "IEF", "GLD"}
 assert len(metrics) == 12
 assert len(correlations) == 12
+assert len(robustness) == 72
+assert len(robustness_summary) == 6
+assert len(intervals) == 12
 
 classified = macro[macro["regime"] != "Unclassified"]
 assert len(classified) == 1111
@@ -47,12 +56,38 @@ reported = metrics.loc[
 ].iloc[0]
 assert np.isclose(recomputed, reported, rtol=0, atol=1e-12)
 
+baseline = robustness[robustness["is_baseline"]].sort_values(["regime", "ticker"])
+reported_sorted = metrics.sort_values(["regime", "ticker"])
+assert len(baseline) == 12
+assert np.allclose(
+    baseline["annualized_return"],
+    reported_sorted["annualized_return"],
+    rtol=0,
+    atol=1e-12,
+)
+assert robustness_summary["gld_leads_tightening"].all()
+assert not robustness_summary["gld_leads_elevated_risk"].all()
+assert robustness_summary["stress_observations"].min() == 8
+assert robustness_summary["stress_observations"].max() == 62
+assert (intervals["ci_2_5"] <= intervals["annualized_return"]).all()
+assert (intervals["annualized_return"] <= intervals["ci_97_5"]).all()
+
+asset_path = ROOT / "data/raw/yahoo/asset_prices.csv"
+asset_metadata = json.loads(
+    (ROOT / "data/raw/yahoo/asset_prices_metadata.json").read_text(encoding="utf-8")
+)
+assert asset_metadata["parameters"]["auto_adjust"] is True
+assert asset_metadata["rows"] == 15846
+assert asset_metadata["sha256"] == hashlib.sha256(asset_path.read_bytes()).hexdigest()
+
 for figure in (
     "macro_regime_timeline.png",
     "regime_annualized_returns.png",
     "regime_annualized_volatility.png",
     "regime_max_drawdown.png",
     "regime_correlations.png",
+    "robustness_annualized_return_ranges.png",
+    "regime_return_bootstrap_intervals.png",
 ):
     path = ROOT / "outputs/figures" / figure
     assert path.exists() and path.stat().st_size > 10_000
@@ -67,5 +102,36 @@ errors = [
     if output.get("output_type") == "error"
 ]
 assert not errors
+
+robustness_notebook = nbformat.read(
+    ROOT / "notebooks/02_robustness_uncertainty.ipynb", as_version=4
+)
+assert "## tl;dr" in robustness_notebook.cells[0].source
+robustness_errors = [
+    output
+    for cell in robustness_notebook.cells
+    if cell.cell_type == "code"
+    for output in cell.get("outputs", [])
+    if output.get("output_type") == "error"
+]
+assert not robustness_errors
+
+workbook = ROOT / "tableau/asset_performance_across_macro_regimes.twbx"
+with zipfile.ZipFile(workbook) as package:
+    names = set(package.namelist())
+    assert names == {
+        "asset_performance_across_macro_regimes.twb",
+        "Data/processed/regime_asset_metrics.csv",
+        "Data/processed/regime_correlations.csv",
+    }
+    assert package.read("Data/processed/regime_asset_metrics.csv") == (
+        PROCESSED / "regime_asset_metrics.csv"
+    ).read_bytes()
+    assert package.read("Data/processed/regime_correlations.csv") == (
+        PROCESSED / "regime_correlations.csv"
+    ).read_bytes()
+    workbook_xml = package.read("asset_performance_across_macro_regimes.twb").decode("utf-8")
+    forbidden = ("postgres", ".hyper", "Stress + High Yield", "Mixed")
+    assert not any(term.lower() in workbook_xml.lower() for term in forbidden)
 
 print("All analysis, boundary, output, and notebook checks passed.")
