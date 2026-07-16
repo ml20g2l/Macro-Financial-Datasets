@@ -21,7 +21,7 @@ ALTER TABLE stg.asset_prices ADD PRIMARY KEY (date, ticker);
 DROP TABLE IF EXISTS stg.fred_vix CASCADE;
 CREATE TABLE stg.fred_vix AS
 SELECT to_date(date_text, 'YYYY-MM-DD') AS date,
-       NULLIF(trim(vix_text), '')::numeric AS vix
+       NULLIF(trim(vix_text), '')::double precision AS vix
 FROM raw.fred_vix
 WHERE date_text ~ '^\d{4}-\d{2}-\d{2}$';
 CREATE UNIQUE INDEX stg_fred_vix_date_idx ON stg.fred_vix(date);
@@ -29,7 +29,7 @@ CREATE UNIQUE INDEX stg_fred_vix_date_idx ON stg.fred_vix(date);
 DROP TABLE IF EXISTS stg.fred_dgs10 CASCADE;
 CREATE TABLE stg.fred_dgs10 AS
 SELECT to_date(date_text, 'YYYY-MM-DD') AS date,
-       NULLIF(trim(dgs10_text), '')::numeric AS dgs10
+       NULLIF(trim(dgs10_text), '')::double precision AS dgs10
 FROM raw.fred_dgs10
 WHERE date_text ~ '^\d{4}-\d{2}-\d{2}$';
 CREATE UNIQUE INDEX stg_fred_dgs10_date_idx ON stg.fred_dgs10(date);
@@ -45,30 +45,34 @@ CREATE UNIQUE INDEX stg_boe_bank_rate_date_idx ON stg.boe_bank_rate(effective_da
 DROP TABLE IF EXISTS stg.daily_macro_aligned CASCADE;
 CREATE TABLE stg.daily_macro_aligned AS
 WITH asset_calendar AS (
-    SELECT DISTINCT date FROM stg.asset_prices
+    -- Match Python's inner join across SPY, IEF, and GLD. A date is eligible
+    -- only when all three adjusted closing prices are present.
+    SELECT date
+    FROM stg.asset_prices
+    GROUP BY date
+    HAVING count(DISTINCT ticker) = 3
+), macro_calendar AS (
+    -- Reproduce pandas merge_asof on the outer-merged FRED calendar. The most
+    -- recent release-calendar row is selected first; a null value on that row
+    -- is not silently replaced with an older observation from only one series.
+    SELECT coalesce(vix.date, yield_10y.date) AS date,
+           vix.vix,
+           yield_10y.dgs10
+    FROM stg.fred_vix AS vix
+    FULL OUTER JOIN stg.fred_dgs10 AS yield_10y USING (date)
 )
 SELECT calendar.date,
-       vix.vix,
-       yield_10y.dgs10
+       macro.vix,
+       macro.dgs10
 FROM asset_calendar AS calendar
 LEFT JOIN LATERAL (
-    SELECT source.vix
-    FROM stg.fred_vix AS source
+    SELECT source.vix, source.dgs10
+    FROM macro_calendar AS source
     WHERE source.date <= calendar.date
       AND calendar.date - source.date <= 7
-      AND source.vix IS NOT NULL
     ORDER BY source.date DESC
     LIMIT 1
-) AS vix ON true
-LEFT JOIN LATERAL (
-    SELECT source.dgs10
-    FROM stg.fred_dgs10 AS source
-    WHERE source.date <= calendar.date
-      AND calendar.date - source.date <= 7
-      AND source.dgs10 IS NOT NULL
-    ORDER BY source.date DESC
-    LIMIT 1
-) AS yield_10y ON true
+) AS macro ON true
 ORDER BY calendar.date;
 ALTER TABLE stg.daily_macro_aligned ADD PRIMARY KEY (date);
 
@@ -98,14 +102,21 @@ WITH features AS (
                ELSE 'Unclassified'
            END AS regime
     FROM lagged_signals
-), boundaries AS (
-    SELECT *,
+), classified_boundaries AS (
+    -- Python assigns episodes after removing Unclassified rows, so a missing
+    -- macro-signal date does not automatically split an otherwise unchanged
+    -- regime episode.
+    SELECT date,
            CASE
-               WHEN regime = 'Unclassified' THEN NULL
                WHEN lag(regime) OVER (ORDER BY date) IS DISTINCT FROM regime THEN 1
                ELSE 0
            END AS new_episode
     FROM classified
+    WHERE regime <> 'Unclassified'
+), boundaries AS (
+    SELECT classified.*, classified_boundaries.new_episode
+    FROM classified
+    LEFT JOIN classified_boundaries USING (date)
 )
 SELECT date, vix, dgs10, dgs10_change_63d_pp,
        signal_vix, signal_dgs10, signal_dgs10_change_63d_pp, regime,

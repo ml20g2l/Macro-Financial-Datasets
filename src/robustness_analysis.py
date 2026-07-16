@@ -13,7 +13,13 @@ from matplotlib.ticker import PercentFormatter
 import numpy as np
 import pandas as pd
 
-from src.build_analysis import REGIME_ORDER, TICKERS, TRADING_DAYS
+from src.build_analysis import (
+    ASSET_COLORS,
+    ASSET_LIGHT_COLORS,
+    REGIME_ORDER,
+    TICKERS,
+    TRADING_DAYS,
+)
 
 
 SCENARIOS = [
@@ -222,14 +228,14 @@ def _plot_robustness_ranges(
             y,
             view["min_return"],
             view["max_return"],
-            color="#8EA9C1",
+            color=ASSET_LIGHT_COLORS[ticker],
             linewidth=5,
             label="Range across 6 scenarios",
         )
         ax.scatter(
             view["baseline_return"],
             y,
-            color="#1F4E79",
+            color=ASSET_COLORS[ticker],
             edgecolor="white",
             linewidth=0.7,
             s=55,
@@ -275,8 +281,8 @@ def _plot_confidence_intervals(project_root: Path, intervals: pd.DataFrame) -> N
             y,
             xerr=np.vstack([estimate - lower, upper - estimate]),
             fmt="o",
-            color="#1F4E79",
-            ecolor="#8EA9C1",
+            color=ASSET_COLORS[ticker],
+            ecolor=ASSET_LIGHT_COLORS[ticker],
             elinewidth=3,
             capsize=4,
             markersize=6,

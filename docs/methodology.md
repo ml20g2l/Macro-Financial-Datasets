@@ -53,4 +53,4 @@ Sampling uncertainty uses 5,000 deterministic circular moving-block bootstrap sa
 
 The SQL pipeline implements raw, staging, and mart layers, backward as-of joins, lagged signals, metrics, episode drawdowns, and correlations. `sql/04_validation.sql` contains fail-fast checks and `sql/05_reconcile_python_outputs.sql` compares SQL results with imported Python outputs.
 
-A live PostgreSQL execution is still pending. Until that run is completed, Python outputs are the verified source of truth and the README does not claim live SQL parity.
+The full SQL sequence was executed on PostgreSQL 18.3 on 16 July 2026. The SQL marts matched all 12 Python metric rows and all 12 Python correlation rows within the `1e-10` reconciliation tolerance.

@@ -8,3 +8,4 @@ ipykernel==7.1.0
 SQLAlchemy==2.0.44
 psycopg2-binary==2.9.11
 yfinance==1.5.1
+tableauhyperapi==0.0.25080
