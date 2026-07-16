@@ -5,3 +5,5 @@ __pycache__/
 *.py[cod]
 .env
 .venv/
+hyperd.log
+tableau/*.twbr

@@ -32,14 +32,17 @@ Exact interval rows are versioned in `data/processed/regime_return_confidence_in
 
 ## Tableau package validation
 
-`scripts/package_tableau_workbook.py` replaces the two packaged CSVs with the current processed files, rejects known legacy PostgreSQL/Hyper/regime references, and confirms byte-for-byte equality after packaging.
+`scripts/package_tableau_workbook.py` converts the two current processed CSVs into 12-row Hyper extracts, rewires the workbook to those extracts, retains byte-for-byte copies of the source CSVs for auditability, and rejects legacy PostgreSQL, live CSV, and old-regime references. The package test opens both Hyper files and verifies their row counts.
 
 ## SQL execution status
 
-The PostgreSQL scripts are complete but have not been executed in this environment because neither PostgreSQL nor Docker is installed. The remaining live check is:
+The complete SQL sequence was executed successfully on PostgreSQL 18.3 on 16 July 2026:
 
-1. Run `sql/00_schema.sql` through `sql/04_validation.sql`.
-2. Import Python's 12 metric rows and 12 correlation rows.
-3. Run `sql/05_reconcile_python_outputs.sql` and require zero discrepancies.
+1. `sql/00_schema.sql` created the raw, staging, and mart schemas.
+2. `sql/01_load_raw.sql` loaded 15,846 asset rows, 1,305 VIX rows, 1,305 DGS10 rows, and 258 Bank Rate rows.
+3. `sql/02_transform_regimes.sql` produced 1,111 classified days, 12 metric rows, and 12 correlation rows.
+4. `sql/04_validation.sql` passed all fail-fast boundary, duplicate, null, row-count, and coverage checks.
+5. `sql/05_reconcile_python_outputs.sql` reported zero metric discrepancies and zero correlation discrepancies at a `1e-10` tolerance.
+6. `sql/03_analysis_queries.sql` completed all portfolio-facing result queries.
 
-This gap is stated explicitly rather than presenting reviewed SQL as executed SQL.
+The live run exposed and resolved three parity issues: FRED release-calendar null handling, floating-point treatment at the +0.50 percentage-point boundary, and episode assignment across Unclassified dates.

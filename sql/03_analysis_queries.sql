@@ -23,10 +23,10 @@ END;
 SELECT regime,
        ticker,
        observations,
-       round(100 * annualized_return, 1) AS annualized_return_pct,
-       round(100 * annualized_volatility, 1) AS annualized_volatility_pct,
-       round(100 * max_drawdown, 1) AS max_drawdown_pct,
-       round(sharpe_ratio_rf0, 2) AS sharpe_ratio_rf0
+       round((100 * annualized_return)::numeric, 1) AS annualized_return_pct,
+       round((100 * annualized_volatility)::numeric, 1) AS annualized_volatility_pct,
+       round((100 * max_drawdown)::numeric, 1) AS max_drawdown_pct,
+       round(sharpe_ratio_rf0::numeric, 2) AS sharpe_ratio_rf0
 FROM mart.regime_asset_metrics
 ORDER BY CASE regime
     WHEN 'Calm / easing' THEN 1

@@ -74,12 +74,12 @@ Reader-facing notebooks:
 
 ## Tableau deliverable
 
-The self-contained workbook is [`tableau/asset_performance_across_macro_regimes.twbx`](tableau/asset_performance_across_macro_regimes.twbx). It packages the current copies of:
+The self-contained, Tableau Public-compatible workbook is [`tableau/asset_performance_across_macro_regimes.twbx`](tableau/asset_performance_across_macro_regimes.twbx). It packages Hyper extracts generated from the current copies of:
 
 - [`regime_asset_metrics.csv`](data/processed/regime_asset_metrics.csv)
 - [`regime_correlations.csv`](data/processed/regime_correlations.csv)
 
-The 1,400 × 900 dashboard reports annualized return, volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime correlations across the four baseline regimes. No PostgreSQL server, Hyper extract, or machine-specific path is required.
+The 1,400 × 900 dashboard reports annualized return, volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime correlations across the four baseline regimes. No PostgreSQL server or machine-specific path is required. The packaged CSVs remain alongside the two Hyper extracts for auditability.
 
 ![Macro regime dashboard](outputs/dashboard_exports/macro_regime_dashboard.png)
 
@@ -89,7 +89,7 @@ The 1,400 × 900 dashboard reports annualized return, volatility, maximum drawdo
 - Baseline outputs: 12 regime/asset metric rows and 12 regime/pair correlation rows
 - Sensitivity outputs: 72 rows across six threshold scenarios
 - Uncertainty outputs: 12 deterministic 95% moving-block bootstrap intervals
-- PostgreSQL: scripts and Python reconciliation queries are complete, but a live PostgreSQL run remains pending because PostgreSQL is not installed in the current environment
+- PostgreSQL: the full pipeline was executed on PostgreSQL 18.3 on 16 July 2026; all 12 metric rows and 12 correlation rows matched the Python outputs with zero discrepancies
 
 Source coverage and hashes are documented in [`data/source_manifest.csv`](data/source_manifest.csv), [`data/README.md`](data/README.md), and [`asset_prices_metadata.json`](data/raw/yahoo/asset_prices_metadata.json).
 

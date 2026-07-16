@@ -3,11 +3,13 @@
 from pathlib import Path
 import hashlib
 import json
+import tempfile
 import zipfile
 
 import nbformat
 import numpy as np
 import pandas as pd
+from tableauhyperapi import Connection, HyperProcess, Telemetry
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -123,6 +125,8 @@ with zipfile.ZipFile(workbook) as package:
         "asset_performance_across_macro_regimes.twb",
         "Data/processed/regime_asset_metrics.csv",
         "Data/processed/regime_correlations.csv",
+        "Data/Extracts/regime_asset_metrics.hyper",
+        "Data/Extracts/regime_correlations.hyper",
     }
     assert package.read("Data/processed/regime_asset_metrics.csv") == (
         PROCESSED / "regime_asset_metrics.csv"
@@ -131,7 +135,29 @@ with zipfile.ZipFile(workbook) as package:
         PROCESSED / "regime_correlations.csv"
     ).read_bytes()
     workbook_xml = package.read("asset_performance_across_macro_regimes.twb").decode("utf-8")
-    forbidden = ("postgres", ".hyper", "Stress + High Yield", "Mixed")
+    forbidden = ("postgres", 'class="textscan"', "Stress + High Yield", "Mixed")
     assert not any(term.lower() in workbook_xml.lower() for term in forbidden)
+    assert workbook_xml.count('class="hyper"') == 2
+    assert workbook_xml.count('table="[Extract].[Extract]"') == 4
+
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        temporary_root = Path(temporary_directory)
+        expected_rows = {
+            "regime_asset_metrics": len(metrics),
+            "regime_correlations": len(correlations),
+        }
+        for extract_name, row_count in expected_rows.items():
+            extract_path = temporary_root / f"{extract_name}.hyper"
+            extract_path.write_bytes(
+                package.read(f"Data/Extracts/{extract_name}.hyper")
+            )
+            with HyperProcess(
+                Telemetry.DO_NOT_SEND_USAGE_DATA_TO_TABLEAU
+            ) as process:
+                with Connection(process.endpoint, extract_path) as connection:
+                    actual_rows = connection.execute_scalar_query(
+                        'SELECT count(*) FROM "Extract"."Extract"'
+                    )
+            assert actual_rows == row_count
 
 print("All analysis, boundary, output, and notebook checks passed.")

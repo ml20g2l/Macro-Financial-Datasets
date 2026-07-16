@@ -27,7 +27,21 @@ CREATE TEMP TABLE python_regime_correlations (
 
 CREATE TEMP TABLE metric_discrepancies AS
 SELECT coalesce(sql.regime, python.regime) AS regime,
-       coalesce(sql.ticker, python.ticker) AS ticker
+       coalesce(sql.ticker, python.ticker) AS ticker,
+       sql.observations AS sql_observations,
+       python.observations AS python_observations,
+       sql.annualized_return AS sql_annualized_return,
+       python.annualized_return AS python_annualized_return,
+       sql.annualized_volatility AS sql_annualized_volatility,
+       python.annualized_volatility AS python_annualized_volatility,
+       sql.max_drawdown AS sql_max_drawdown,
+       python.max_drawdown AS python_max_drawdown,
+       sql.sharpe_ratio_rf0 AS sql_sharpe_ratio_rf0,
+       python.sharpe_ratio_rf0 AS python_sharpe_ratio_rf0,
+       sql.win_rate AS sql_win_rate,
+       python.win_rate AS python_win_rate,
+       sql.conditional_cumulative_return AS sql_conditional_cumulative_return,
+       python.conditional_cumulative_return AS python_conditional_cumulative_return
 FROM mart.regime_asset_metrics AS sql
 FULL OUTER JOIN python_regime_asset_metrics AS python USING (regime, ticker)
 WHERE sql.regime IS NULL OR python.regime IS NULL
@@ -42,13 +56,20 @@ WHERE sql.regime IS NULL OR python.regime IS NULL
 CREATE TEMP TABLE correlation_discrepancies AS
 SELECT coalesce(sql.regime, python.regime) AS regime,
        coalesce(sql.asset_1, python.asset_1) AS asset_1,
-       coalesce(sql.asset_2, python.asset_2) AS asset_2
+       coalesce(sql.asset_2, python.asset_2) AS asset_2,
+       sql.observations AS sql_observations,
+       python.observations AS python_observations,
+       sql.correlation AS sql_correlation,
+       python.correlation AS python_correlation
 FROM mart.regime_correlations AS sql
 FULL OUTER JOIN python_regime_correlations AS python
   USING (regime, asset_1, asset_2)
 WHERE sql.regime IS NULL OR python.regime IS NULL
    OR sql.observations <> python.observations
    OR abs(sql.correlation - python.correlation) > 1e-10;
+
+TABLE metric_discrepancies;
+TABLE correlation_discrepancies;
 
 DO $$
 BEGIN

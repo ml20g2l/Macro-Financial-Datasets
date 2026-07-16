@@ -13,4 +13,6 @@ psql -d macro_project -f sql/03_analysis_queries.sql
 
 `01_load_raw.sql` uses `psql`'s client-side `\copy`, so the command must be launched from the repository root. The SQL transformation mirrors the Python implementation: seven-day backward as-of joins for release-calendar gaps, a 63-trading-day yield change, and one-trading-day-lagged regime signals.
 
-`05_reconcile_python_outputs.sql` imports the versioned Python metric and correlation CSVs into temporary tables. It fails if row keys, observations, or numeric values differ beyond `1e-10`. A successful live run must report zero metric discrepancies and zero correlation discrepancies. PostgreSQL is not installed in the current build environment, so this live execution remains explicitly pending.
+`05_reconcile_python_outputs.sql` imports the versioned Python metric and correlation CSVs into temporary tables. It fails if row keys, observations, or numeric values differ beyond `1e-10`.
+
+The complete sequence was executed successfully on PostgreSQL 18.3 on 16 July 2026. The verified result was 1,111 classified days, 12 metric rows, 12 correlation rows, zero metric discrepancies, and zero correlation discrepancies.
