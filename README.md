@@ -81,6 +81,8 @@ The self-contained, Tableau Public-compatible workbook is [`tableau/asset_perfor
 
 The 1,400 × 900 dashboard reports annualized return, volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime correlations across the four baseline regimes. No PostgreSQL server or machine-specific path is required. The packaged CSVs remain alongside the two Hyper extracts for auditability.
 
+Asset colors are fixed across Python, notebooks, and Tableau: **SPY blue**, **IEF orange**, and **GLD gold/yellow**.
+
 ![Macro regime dashboard](outputs/dashboard_exports/macro_regime_dashboard.png)
 
 ## Data and validation status

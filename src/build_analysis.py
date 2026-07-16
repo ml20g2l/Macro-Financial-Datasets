@@ -36,7 +36,16 @@ REGIME_COLORS = {
     "Elevated risk": "#F28E2B",
     "Stress": "#B55A7A",
 }
-ASSET_COLORS = {"SPY": "#4C78A8", "IEF": "#D4A72C", "GLD": "#E07A5F"}
+ASSET_COLORS = {
+    "SPY": "#4C78A8",  # blue
+    "IEF": "#F28E2B",  # orange
+    "GLD": "#D4A72C",  # gold / yellow
+}
+ASSET_LIGHT_COLORS = {
+    "SPY": "#9DB7D0",
+    "IEF": "#F7C48D",
+    "GLD": "#E9D27A",
+}
 
 
 def _read_source_data(project_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, dict]:

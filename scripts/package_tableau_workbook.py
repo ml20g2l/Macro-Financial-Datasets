@@ -68,6 +68,16 @@ FORBIDDEN_REFERENCES = (
     "Mixed",
 )
 HYPER_TABLE = TableName("Extract", "Extract")
+TABLEAU_ASSET_COLORS = {
+    "SPY": "#4C78A8",
+    "IEF": "#F28E2B",
+    "GLD": "#D4A72C",
+}
+ASSET_COLOR_WORKSHEETS = (
+    "Annualized Return",
+    "Annualized Volatility",
+    "Maximum Drawdown",
+)
 
 
 def _sql_type(kind: str) -> SqlType:
@@ -182,6 +192,110 @@ def _convert_datasource_to_hyper(
     return xml
 
 
+def _apply_asset_palette(xml: str) -> str:
+    """Color asset comparison marks consistently without changing layout zones."""
+    for worksheet_name in ASSET_COLOR_WORKSHEETS:
+        worksheet_pattern = re.compile(
+            rf'(<worksheet name="{re.escape(worksheet_name)}">)(.*?)(</worksheet>)',
+            flags=re.DOTALL,
+        )
+        match = worksheet_pattern.search(xml)
+        if not match:
+            raise RuntimeError(f"Missing Tableau worksheet: {worksheet_name}")
+        worksheet = match.group(2)
+        datasource_match = re.search(
+            r'<datasource caption="regime_asset_metrics" name="([^"]+)"',
+            worksheet,
+        )
+        if not datasource_match:
+            raise RuntimeError(
+                f"Missing metric datasource in Tableau worksheet: {worksheet_name}"
+            )
+        ticker_field = (
+            f"[{datasource_match.group(1)}].[none:ticker:nk]"
+        )
+        # Remove the invalid pane-level palette emitted by older versions of
+        # this packager. Tableau stores categorical maps at datasource level.
+        worksheet = re.sub(
+            r'\s*<style>\s*<style-rule element="mark">\s*'
+            r'<encoding attr="color"[^>]*type="palette">.*?</encoding>\s*'
+            r"</style-rule>\s*</style>",
+            "",
+            worksheet,
+            flags=re.DOTALL,
+        )
+        color_shelf = f'<color column="{ticker_field}" />'
+        if color_shelf not in worksheet:
+            mark = '<mark class="Automatic" />'
+            replacement = (
+                f"{mark}\n"
+                "            <encodings>\n"
+                f"              {color_shelf}\n"
+                "            </encodings>"
+            )
+            if worksheet.count(mark) != 1:
+                raise RuntimeError(
+                    f"Unexpected mark structure in Tableau worksheet: {worksheet_name}"
+                )
+            worksheet = worksheet.replace(mark, replacement, 1)
+        xml = (
+            xml[: match.start()]
+            + match.group(1)
+            + worksheet
+            + match.group(3)
+            + xml[match.end() :]
+        )
+
+    datasource_pattern = re.compile(
+        r'(<datasource caption="regime_asset_metrics"[^>]*>)(.*?)(</datasource>)',
+        flags=re.DOTALL,
+    )
+    datasource_match = datasource_pattern.search(xml)
+    if not datasource_match:
+        raise RuntimeError("Missing Tableau regime_asset_metrics datasource")
+    datasource_body = datasource_match.group(2)
+    palette = (
+        '<style>\n'
+        '        <style-rule element="mark">\n'
+        '          <encoding attr="color" field="[none:ticker:nk]" type="palette">\n'
+        + "\n".join(
+            f'            <map to="{color}"><bucket>"{ticker}"</bucket></map>'
+            for ticker, color in TABLEAU_ASSET_COLORS.items()
+        )
+        + "\n"
+        "          </encoding>\n"
+        "        </style-rule>\n"
+        "      </style>"
+    )
+    existing_palette = re.compile(
+        r'<style>\s*<style-rule element="mark">\s*'
+        r'<encoding attr="color" field="\[none:ticker:nk\]"[^>]*>'
+        r".*?</encoding>\s*</style-rule>\s*</style>",
+        flags=re.DOTALL,
+    )
+    datasource_body, palette_count = existing_palette.subn(
+        palette, datasource_body
+    )
+    if palette_count == 0:
+        layout_match = re.search(r"<layout\b[^>]*/>", datasource_body)
+        if not layout_match:
+            raise RuntimeError("Missing Tableau datasource layout anchor")
+        datasource_body = (
+            datasource_body[: layout_match.end()]
+            + "\n      "
+            + palette
+            + datasource_body[layout_match.end() :]
+        )
+    xml = (
+        xml[: datasource_match.start()]
+        + datasource_match.group(1)
+        + datasource_body
+        + datasource_match.group(3)
+        + xml[datasource_match.end() :]
+    )
+    return xml
+
+
 def refresh_package(project_root: Path, workbook: Path) -> None:
     workbook = workbook.resolve()
     with zipfile.ZipFile(workbook, "r") as source:
@@ -213,6 +327,7 @@ def refresh_package(project_root: Path, workbook: Path) -> None:
 
         if 'class="textscan"' in xml or "Data/processed" in xml:
             raise RuntimeError("A live CSV connection remains in the Tableau workbook")
+        xml = _apply_asset_palette(xml)
         entries[twb_name] = xml.encode("utf-8")
 
         temporary_path = temporary_root / workbook.name

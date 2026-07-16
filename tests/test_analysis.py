@@ -3,6 +3,7 @@
 from pathlib import Path
 import hashlib
 import json
+import sys
 import tempfile
 import zipfile
 
@@ -11,8 +12,10 @@ import numpy as np
 import pandas as pd
 from tableauhyperapi import Connection, HyperProcess, Telemetry
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.build_analysis import ASSET_COLORS
+
 PROCESSED = ROOT / "data/processed"
 
 macro = pd.read_csv(PROCESSED / "daily_macro_regimes.csv", parse_dates=["date"])
@@ -27,6 +30,11 @@ assert not macro["date"].duplicated().any()
 assert not assets.duplicated(["date", "ticker"]).any()
 assert set(metrics["regime"]) == {"Calm / easing", "Tightening", "Elevated risk", "Stress"}
 assert set(metrics["ticker"]) == {"SPY", "IEF", "GLD"}
+assert ASSET_COLORS == {
+    "SPY": "#4C78A8",
+    "IEF": "#F28E2B",
+    "GLD": "#D4A72C",
+}
 assert len(metrics) == 12
 assert len(correlations) == 12
 assert len(robustness) == 72
@@ -139,6 +147,14 @@ with zipfile.ZipFile(workbook) as package:
     assert not any(term.lower() in workbook_xml.lower() for term in forbidden)
     assert workbook_xml.count('class="hyper"') == 2
     assert workbook_xml.count('table="[Extract].[Extract]"') == 4
+    for ticker, color in ASSET_COLORS.items():
+        assert (
+            workbook_xml.count(
+                f'<map to="{color}"><bucket>"{ticker}"</bucket></map>'
+            )
+            == 1
+        )
+    assert workbook_xml.count("<color column=") == 3
 
     with tempfile.TemporaryDirectory() as temporary_directory:
         temporary_root = Path(temporary_directory)
