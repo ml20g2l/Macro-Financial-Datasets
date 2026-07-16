@@ -12,6 +12,14 @@ The common usable window is **7 July 2021 to 30 December 2025**, with 1,111 clas
 2. **Elevated-risk leadership is threshold-sensitive.** GLD leads under the baseline VIX 20/30 definition, but not under every VIX 25/35 scenario.
 3. **Stress estimates are not stable enough for a defensive-asset claim.** The Stress sample ranges from 8 to 62 days across scenarios, and the baseline SPY 95% block-bootstrap interval spans -36.7% to 171.5% annualized.
 
+## Dashboard preview
+
+![Macro regime and asset performance dashboard](outputs/dashboard_exports/macro_regime_dashboard.png)
+
+The dashboard uses the same versioned processed CSVs as the notebooks, SQL reconciliation, and Tableau workbook. Asset colors remain fixed throughout: **SPY blue**, **IEF orange**, and **GLD gold/yellow**.
+
+## Key charts
+
 ![Annualized returns by regime](outputs/figures/regime_annualized_returns.png)
 
 ![Block-bootstrap annualized return intervals](outputs/figures/regime_return_bootstrap_intervals.png)
@@ -62,6 +70,7 @@ python -m venv .venv
 .venv/Scripts/python scripts/generate_robustness_notebook.py
 .venv/Scripts/python -m jupyter nbconvert --execute --to notebook --inplace notebooks/01_macro_regime_analysis.ipynb --ExecutePreprocessor.timeout=180
 .venv/Scripts/python -m jupyter nbconvert --execute --to notebook --inplace notebooks/02_robustness_uncertainty.ipynb --ExecutePreprocessor.timeout=180
+.venv/Scripts/python scripts/export_dashboard_image.py
 .venv/Scripts/python tests/test_analysis.py
 ```
 
@@ -82,8 +91,6 @@ The self-contained, Tableau Public-compatible workbook is [`tableau/asset_perfor
 The 1,400 × 900 dashboard reports annualized return, volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime correlations across the four baseline regimes. No PostgreSQL server or machine-specific path is required. The packaged CSVs remain alongside the two Hyper extracts for auditability.
 
 Asset colors are fixed across Python, notebooks, and Tableau: **SPY blue**, **IEF orange**, and **GLD gold/yellow**.
-
-![Macro regime dashboard](outputs/dashboard_exports/macro_regime_dashboard.png)
 
 ## Data and validation status
 
