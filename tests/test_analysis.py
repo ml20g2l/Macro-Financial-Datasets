@@ -102,6 +102,9 @@ for figure in (
     path = ROOT / "outputs/figures" / figure
     assert path.exists() and path.stat().st_size > 10_000
 
+dashboard_preview = ROOT / "outputs/dashboard_exports/macro_regime_dashboard.png"
+assert dashboard_preview.exists() and dashboard_preview.stat().st_size > 100_000
+
 notebook = nbformat.read(ROOT / "notebooks/01_macro_regime_analysis.ipynb", as_version=4)
 assert notebook.cells[0].cell_type == "markdown" and "## tl;dr" in notebook.cells[0].source
 errors = [
