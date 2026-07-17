@@ -4,6 +4,14 @@ An end-to-end financial analytics project that classifies daily US market regime
 
 The portfolio question is deliberately narrow: **how did distribution-adjusted ETF returns differ when prior-day VIX and the recent direction of the US 10-year yield indicated calm, tightening, elevated risk, or stress?**
 
+## Dashboard
+
+![Macro Regime and Asset Performance dashboard](outputs/dashboard_exports/Macro%20Regime%20Dashboard.png)
+
+The dashboard summarizes **1,111 classified trading days** across four lagged regimes. GLD recorded the highest baseline Sharpe ratio (**1.95**) in Elevated risk, SPY had the deepest maximum drawdown (**-13.3%**) in Elevated risk, and the highest cross-asset correlation was IEF-SPY (**0.42**) in Tightening.
+
+Asset colors remain fixed throughout the project: **SPY blue**, **IEF orange**, and **GLD gold/yellow**.
+
 ## Portfolio highlights
 
 The common usable window is **7 July 2021 to 30 December 2025**, with 1,111 classified trading days after the 63-day warm-up and one-day signal lag.
@@ -11,12 +19,6 @@ The common usable window is **7 July 2021 to 30 December 2025**, with 1,111 clas
 1. **GLD's Tightening result is the most robust finding.** GLD has the highest annualized return in Tightening under all six tested VIX/yield threshold combinations.
 2. **Elevated-risk leadership is threshold-sensitive.** GLD leads under the baseline VIX 20/30 definition, but not under every VIX 25/35 scenario.
 3. **Stress estimates are not stable enough for a defensive-asset claim.** The Stress sample ranges from 8 to 62 days across scenarios, and the baseline SPY 95% block-bootstrap interval spans -36.7% to 171.5% annualized.
-
-## Dashboard preview
-
-![Macro regime and asset performance dashboard](outputs/dashboard_exports/macro_regime_dashboard.png)
-
-The dashboard uses the same versioned processed CSVs as the notebooks, SQL reconciliation, and Tableau workbook. Asset colors remain fixed throughout: **SPY blue**, **IEF orange**, and **GLD gold/yellow**.
 
 ## Key charts
 
@@ -88,7 +90,7 @@ The self-contained, Tableau Public-compatible workbook is [`tableau/asset_perfor
 - [`regime_asset_metrics.csv`](data/processed/regime_asset_metrics.csv)
 - [`regime_correlations.csv`](data/processed/regime_correlations.csv)
 
-The 1,400 × 900 dashboard reports annualized return, volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime correlations across the four baseline regimes. No PostgreSQL server or machine-specific path is required. The packaged CSVs remain alongside the two Hyper extracts for auditability.
+The 1,600 × 1,000 dashboard reports annualized return, volatility, maximum drawdown, zero-risk-free-rate Sharpe ratio, and within-regime correlations across the four baseline regimes. No PostgreSQL server or machine-specific path is required. The packaged CSVs remain alongside the two Hyper extracts for auditability.
 
 Asset colors are fixed across Python, notebooks, and Tableau: **SPY blue**, **IEF orange**, and **GLD gold/yellow**.
 
